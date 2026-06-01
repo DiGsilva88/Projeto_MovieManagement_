@@ -1,3 +1,5 @@
+Início do projeto - estrutura inicial + README
+
 # 🎬 MovieManagement
 
 Aplicação de gestão de filmes desenvolvida em C# com arquitetura em camadas, interfaces, regras de negócio e persistência de dados.
