@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Domain.Interfaces
 {
-    internal interface IRealizadorRepository
+    public interface IRealizadorRepository
     {
 
         void Add(Realizador realizador);

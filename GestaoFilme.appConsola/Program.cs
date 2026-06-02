@@ -15,6 +15,11 @@ namespace GestaoFilme.appConsola
 
             IFilmeRepository repositorio = new FilmeRepositoryMemory();
             FilmeService servico = new FilmeService(repositorio);
+            ICategoryRepository categoriaRepo = new CategoriaRepositoryMemory();
+            CategoriaService categoriaService = new CategoriaService(categoriaRepo);
+
+            IRealizadorRepository realizadorRepo = new RealizadorRepositoryMemory();
+            RealizadorService realizadorService = new RealizadorService(realizadorRepo);
 
             // ─── Loop principal do menu ─────────────────────────────────────
             bool continuar = true;
@@ -30,6 +35,15 @@ namespace GestaoFilme.appConsola
                     case "2": ListarFilmes(servico); break;
                     case "3": ProcurarFilme(servico); break;
                     case "4": RemoverFilme(servico); break;
+                    case "5": AdicionarCategoria(categoriaService); break;
+                    case "6": ListarCategorias(categoriaService); break;
+                    case "7": ProcurarCategoria(categoriaService); break;
+                    case "8": RemoverCategoria(categoriaService); break;
+
+                    case "9": AdicionarRealizador(realizadorService); break;
+                    case "10": ListarRealizadores(realizadorService); break;
+                    case "11": ProcurarRealizador(realizadorService); break;
+                    case "12": RemoverRealizador(realizadorService); break;
                     case "0":
                         continuar = false;
                         Console.WriteLine("\nAplicação terminada. Até logo!");
@@ -51,12 +65,20 @@ namespace GestaoFilme.appConsola
         static void MostrarMenu()
         {
             Console.WriteLine("\n╔══════════════════════════╗");
-            Console.WriteLine("║    GESTÃO DE FILMES      ║");
+            Console.WriteLine("║     GESTÃO DE FILMES     ║");
             Console.WriteLine("╠══════════════════════════╣");
             Console.WriteLine("║  1 - Adicionar filme     ║");
             Console.WriteLine("║  2 - Listar filmes       ║");
             Console.WriteLine("║  3 - Procurar filme      ║");
             Console.WriteLine("║  4 - Remover filme       ║");
+            Console.WriteLine("║  5 - Adicionar categoria ║");
+            Console.WriteLine("║  6 - Listar categorias   ║");
+            Console.WriteLine("║  7 - Procurar categorias ║");
+            Console.WriteLine("║  8 - Remover categoria   ║");
+            Console.WriteLine("║  5 -Adicionar realizador ║");
+            Console.WriteLine("║  6 - Listar   realizador ║");
+            Console.WriteLine("║  7 - Procurar realizador ║");
+            Console.WriteLine("║  8 - Remover realizador  ║");
             Console.WriteLine("║  0 - Sair                ║");
             Console.WriteLine("╚══════════════════════════╝");
             Console.Write("Escolha uma opção: ");
@@ -138,7 +160,7 @@ namespace GestaoFilme.appConsola
             Console.WriteLine("\n--- PROCURAR FILME ---");
 
             Console.Write("Título a procurar: ");
-            string titulo = Console.ReadLine();
+            string titulo = Console.ReadLine() ?? "";
 
             var filme = servico.ProcurarFilme(titulo);
 
@@ -195,12 +217,156 @@ namespace GestaoFilme.appConsola
                 Console.WriteLine("Valor inválido. Introduza um número inteiro positivo.");
             }
         }
+        ///metodos da categoria
+        static void AdicionarCategoria(CategoriaService servico)
+        {
+    Console.WriteLine("\n--- ADICIONAR CATEGORIA ---");
 
-        
-        /// Lê e valida um número decimal dentro de um intervalo definido.
-        /// Repete a pergunta até o utilizador introduzir um valor válido.
-        
-        static double LerDouble(string mensagem, double min, double max)
+    Console.Write("Nome: ");
+    string nome = Console.ReadLine() ?? "";
+
+        Categoria categoria = new Categoria(0, nome);
+
+    try
+    {
+        servico.AdicionarCategoria(categoria);
+        Console.WriteLine("✔ Categoria adicionada com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro: " + ex.Message);
+    }
+}
+
+static void ListarCategorias(CategoriaService servico)
+{
+    Console.WriteLine("\n--- LISTA DE CATEGORIAS ---");
+
+    var lista = servico.ListarCategorias();
+
+    if (lista.Count == 0)
+    {
+        Console.WriteLine("Não existem categorias registadas.");
+        return;
+    }
+
+    foreach (var categoria in lista)
+    {
+        Console.WriteLine($"[{categoria.Id}] {categoria.Nome}");
+    }
+}
+
+static void ProcurarCategoria(CategoriaService servico)
+{
+    Console.WriteLine("\n--- PROCURAR CATEGORIA ---");
+
+    int id = LerInteiro("ID da categoria: ");
+
+    var categoria = servico.ProcurarCategoria(id);
+
+    if (categoria == null)
+        Console.WriteLine("Categoria não encontrada.");
+    else
+        Console.WriteLine($"[{categoria.Id}] {categoria.Nome}");
+}
+
+static void RemoverCategoria(CategoriaService servico)
+{
+    Console.WriteLine("\n--- REMOVER CATEGORIA ---");
+
+    int id = LerInteiro("ID da categoria: ");
+
+    try
+    {
+        servico.RemoverCategoria(id);
+        Console.WriteLine("✔ Categoria removida com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro: " + ex.Message);
+    }
+}
+
+static void AdicionarRealizador(RealizadorService servico)
+{
+    Console.WriteLine("\n--- ADICIONAR REALIZADOR ---");
+
+    Console.Write("Nome: ");
+    string nome = Console.ReadLine() ?? "";
+
+    Console.Write("Nacionalidade: ");
+    string nacionalidade = Console.ReadLine() ?? "";
+
+    Realizador realizador = new Realizador(
+        0,
+        nome,
+        nacionalidade
+    );
+
+    try
+    {
+        servico.AdicionarRealizador(realizador);
+        Console.WriteLine("✔ Realizador adicionado com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro: " + ex.Message);
+    }
+}
+
+static void ListarRealizadores(RealizadorService servico)
+{
+    Console.WriteLine("\n--- LISTA DE REALIZADORES ---");
+
+    var lista = servico.ListarRealizadores();
+
+    if (lista.Count == 0)
+    {
+        Console.WriteLine("Não existem realizadores registados.");
+        return;
+    }
+
+    foreach (var r in lista)
+    {
+        Console.WriteLine($"[{r.Id}] {r.Nome} ({r.Nacionalidade})");
+    }
+}
+
+static void ProcurarRealizador(RealizadorService servico)
+{
+    Console.WriteLine("\n--- PROCURAR REALIZADOR ---");
+
+    int id = LerInteiro("ID do realizador: ");
+
+    var realizador = servico.ProcurarRealizador(id);
+
+    if (realizador == null)
+        Console.WriteLine("Realizador não encontrado.");
+    else
+        Console.WriteLine($"[{realizador.Id}] {realizador.Nome} ({realizador.Nacionalidade})");
+}
+
+static void RemoverRealizador(RealizadorService servico)
+{
+    Console.WriteLine("\n--- REMOVER REALIZADOR ---");
+
+    int id = LerInteiro("ID do realizador: ");
+
+    try
+    {
+        servico.RemoverRealizador(id);
+        Console.WriteLine("✔ Realizador removido com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Erro: " + ex.Message);
+    }
+}
+
+/// Lê e valida um número decimal dentro de um intervalo definido.
+/// Repete a pergunta até o utilizador introduzir um valor válido.
+
+static double LerDouble(string mensagem, double min, double max)
         {
             double valor;
             while (true)
@@ -212,5 +378,6 @@ namespace GestaoFilme.appConsola
                 Console.WriteLine($"Valor inválido. Deve estar entre {min} e {max}.");
             }
         }
+
     }
 }
