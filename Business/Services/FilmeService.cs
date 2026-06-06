@@ -1,65 +1,63 @@
-﻿using Domain.Entidades;
+using Domain.Entidades;
 using Domain.Interfaces;
-using System;
-using System.Collections.Generic;
 
 namespace Business.Servicos
 {
+    /// <summary>
+    /// Serviço de Filmes — contém todas as regras de negócio.
+    /// Parte 3: recebe também categoriaRepo e realizadorRepo para validar relações.
+    /// </summary>
     public class FilmeService
     {
-        private readonly IFilmeRepository _repository;
+        private readonly IFilmeRepository _repositorio;
+        private readonly ICategoriaRepository _categoriaRepo;
+        private readonly IRealizadorRepository _realizadorRepo;
 
-        // Construtor com Injeção de Dependência
-        public FilmeService(IFilmeRepository repository)
+        public FilmeService(
+            IFilmeRepository repositorio,
+            ICategoriaRepository categoriaRepo,
+            IRealizadorRepository realizadorRepo)
         {
-            // Validação direta: garante que o repositório não é nulo
-
-
-            if (repository == null)
-            {
-                throw new ArgumentNullException(nameof(repository));
-            }
-            _repository = repository;
+            _repositorio = repositorio;
+            _categoriaRepo = categoriaRepo;
+            _realizadorRepo = realizadorRepo;
         }
 
         public void AdicionarFilme(Filme filme)
         {
+            // Regra: título obrigatório
             if (string.IsNullOrWhiteSpace(filme.Titulo))
-            {
-                throw new Exception("Título é obrigatório");
-            }
+                throw new ArgumentException("O título é obrigatório.");
 
-            if (_repository.GetByTitulo(filme.Titulo) != null)
-            {
-                throw new Exception("Já existe um filme com esse título");
-            }
-
+            // Regra: classificação entre 0 e 5
             if (filme.Classificacao < 0 || filme.Classificacao > 5)
-            {
-                throw new Exception("Classificação deve estar entre 0 e 5");
-            }
+                throw new ArgumentException("A classificação deve estar entre 0 e 5.");
 
-            _repository.Add(filme);
+            // Regra: sem títulos duplicados
+            if (_repositorio.GetByTitulo(filme.Titulo) != null)
+                throw new InvalidOperationException($"Já existe um filme com o título '{filme.Titulo}'.");
+
+            // Regra Parte 3: a categoria deve existir
+            if (_categoriaRepo.GetById(filme.CategoriaId) == null)
+                throw new InvalidOperationException($"A categoria com ID {filme.CategoriaId} não existe. Adicione a categoria primeiro.");
+
+            // Regra Parte 3: o realizador deve existir
+            if (_realizadorRepo.GetById(filme.RealizadorId) == null)
+                throw new InvalidOperationException($"O realizador com ID {filme.RealizadorId} não existe. Adicione o realizador primeiro.");
+
+            _repositorio.Add(filme);
         }
 
-        public List<Filme> ListarFilmes()
-        {
-            return _repository.GetAll();
-        }
+        public List<Filme> ListarFilmes() => _repositorio.GetAll();
 
-        public Filme ProcurarFilme(string titulo)
-        {
-            if (string.IsNullOrWhiteSpace(titulo))
-            {
-                throw new ArgumentException("O título de busca não pode ser vazio.");
-            }
-
-            return _repository.GetByTitulo(titulo);
-        }
+        public Filme? ProcurarFilme(string titulo) => _repositorio.GetByTitulo(titulo);
 
         public void RemoverFilme(int id)
         {
-            _repository.Remove(id);
+            if (_repositorio.GetById(id) == null)
+                throw new InvalidOperationException($"Filme com ID {id} não encontrado.");
+
+            _repositorio.Remove(id);
         }
     }
 }

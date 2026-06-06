@@ -1,51 +1,43 @@
-﻿using Domain.Entidades;
+using Domain.Entidades;
 using Domain.Interfaces;
 
 namespace Business.Servicos
 {
+    /// <summary>
+    /// Serviço de Categorias — regras de negócio para categorias.
+    /// </summary>
     public class CategoriaService
     {
-        private readonly ICategoryRepository _repositorio;
+        private readonly ICategoriaRepository _repositorio;
 
-        public CategoriaService(ICategoryRepository repositorio)
+        public CategoriaService(ICategoriaRepository repositorio)
         {
             _repositorio = repositorio;
         }
 
         public void AdicionarCategoria(Categoria categoria)
         {
+            // Regra: nome obrigatório
             if (string.IsNullOrWhiteSpace(categoria.Nome))
                 throw new ArgumentException("O nome da categoria é obrigatório.");
 
-            var categorias = _repositorio.GetAll();
-
-            if (categorias.Any(c =>
-                c.Nome.Equals(categoria.Nome, StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException("Já existe uma categoria com esse nome.");
-            }
+            // Regra: sem categorias duplicadas
+            if (_repositorio.GetByNome(categoria.Nome) != null)
+                throw new InvalidOperationException($"Já existe uma categoria com o nome '{categoria.Nome}'.");
 
             _repositorio.Add(categoria);
         }
 
-        public List<Categoria> ListarCategorias()
-        {
-            return _repositorio.GetAll();
-        }
+        public List<Categoria> ListarCategorias() => _repositorio.GetAll();
 
-        public Categoria? ProcurarCategoria(int id)
-        {
-            return _repositorio.GetById(id);
-        }
+        public Categoria? ProcurarCategoria(int id) => _repositorio.GetById(id);
 
         public void RemoverCategoria(int id)
         {
-            var categoria = _repositorio.GetById(id);
+            if (_repositorio.GetById(id) == null)
+                throw new InvalidOperationException($"Categoria com ID {id} não encontrada.");
 
-            if (categoria == null)
-                throw new ArgumentException("Categoria não encontrada.");
-
-            _repositorio.Delete(id);
+            _repositorio.Remove(id);
         }
     }
 }
